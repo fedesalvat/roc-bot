@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const { RESPUESTAS } = require("./knowledge");
+const { registrarPreguntaSinRespuesta } = require("./digest");
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mapa de keywords → intención
@@ -143,7 +144,7 @@ function detectarIntencion(texto) {
 // Generar respuesta
 // ─────────────────────────────────────────────────────────────────────────────
 
-function generarRespuesta(mensajeUsuario) {
+function generarRespuesta(mensajeUsuario, usuarioIg = null) {
   if (!mensajeUsuario || mensajeUsuario.trim() === "") {
     return RESPUESTAS.bienvenida();
   }
@@ -156,6 +157,8 @@ function generarRespuesta(mensajeUsuario) {
     return RESPUESTAS[intencion]();
   }
 
+  // No se entendió → registrar para el digest diario
+  registrarPreguntaSinRespuesta(usuarioIg, mensajeUsuario);
   return RESPUESTAS.no_entiendo();
 }
 

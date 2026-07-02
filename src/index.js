@@ -9,6 +9,7 @@ const express = require("express");
 const crypto  = require("crypto");
 const { generarRespuesta } = require("./messageHandler");
 const { enviarMensaje, marcarVisto, escribiendo } = require("./instagram");
+const { iniciarDigest } = require("./digest");
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -125,8 +126,8 @@ async function procesarEvento(evento) {
     await escribiendo(senderId);
     await sleep(800);
 
-    // Generar y enviar respuesta
-    const respuesta = generarRespuesta(textoUsuario);
+    // Generar y enviar respuesta (pasar senderId como usuario para el digest)
+    const respuesta = generarRespuesta(textoUsuario, senderId);
     await enviarMensaje(senderId, respuesta);
   } catch (err) {
     console.error(`[ROC BOT] Error procesando evento para ${senderId}:`, err.message);
@@ -164,5 +165,11 @@ app.listen(PORT, () => {
   console.log(`   Health:     GET /`);
   console.log(`   Verify token: ${process.env.VERIFY_TOKEN ? "✅ configurado" : "❌ FALTA CONFIGURAR"}`);
   console.log(`   Page token:   ${process.env.PAGE_ACCESS_TOKEN ? "✅ configurado" : "❌ FALTA CONFIGURAR"}`);
-  console.log(`   App secret:   ${process.env.APP_SECRET ? "✅ configurado" : "⚠️  sin configurar"}\n`);
+  console.log(`   App secret:   ${process.env.APP_SECRET ? "✅ configurado" : "⚠️  sin configurar"}`);
+  console.log(`   Resend:       ${process.env.RESEND_API_KEY ? "✅ configurado" : "⚠️  sin configurar (digest desactivado)"}\n`);
+
+  // Iniciar cron de digest diario (solo si Resend está configurado)
+  if (process.env.RESEND_API_KEY) {
+    iniciarDigest();
+  }
 });
