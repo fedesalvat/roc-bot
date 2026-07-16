@@ -45,12 +45,12 @@ const INFO = {
     },
   },
 
-  inscripciones_link: "https://eventols.com/p/roc-obstacle-course-161125",
+  inscripciones_link: "https://inscripcion.rocargentina.com/inscripcion",
 
   categorias: [
-    "General (sin chip de tiempo)",
-    "Competitiva (con chip de tiempo, con obstáculos penales)",
-    "Elite (con chip de tiempo, obstáculos obligatorios, premiada)",
+    "Open (salidas 10:30 / 11:00 / 11:30hs)",
+    "Competitiva (salida 10:00hs)",
+    "Elite (salida 9:30hs, obstáculos obligatorios, premiada)",
   ],
 
   descripcion: [
@@ -83,7 +83,19 @@ const RESPUESTAS = {
     `🗓 ${INFO.evento.fecha}\n` +
     `📍 ${INFO.evento.lugar}\n` +
     `🏃 ${INFO.evento.distancia} · ${INFO.evento.obstaculos}\n\n` +
-    `Las inscripciones abren el *${INFO.evento.apertura_inscripciones}*.`,
+    `✅ ¡Las inscripciones ya están abiertas!\n${INFO.inscripciones_link}`,
+
+  // DM que se envía cuando alguien comenta pidiendo info en una publicación
+  comentarioInfo: () =>
+    `💀 ¡Hola! Nos pediste info de *ROC 2026* — acá va:\n\n` +
+    `🗓 ${INFO.evento.fecha}\n` +
+    `📍 ${INFO.evento.lugar}\n` +
+    `🏃 ${INFO.evento.distancia} · ${INFO.evento.obstaculos}\n\n` +
+    `💰 Precio actual: *$69.000* (sube el 10 de agosto)\n` +
+    `Categorías: Open, Competitiva y Elite\n\n` +
+    `✅ Inscribite acá:\n${INFO.inscripciones_link}\n\n` +
+    `¿Tenés otra duda? Escribime acá y te respondo al toque.\n\n` +
+    `*CORRER NO ES SUFICIENTE*`,
 
   lugar: () =>
     `📍 *El evento se realiza en:*\n\n` +

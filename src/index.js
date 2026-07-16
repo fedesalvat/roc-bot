@@ -8,7 +8,8 @@ require("dotenv").config();
 const express = require("express");
 const crypto  = require("crypto");
 const { generarRespuesta } = require("./messageHandler");
-const { enviarMensaje, marcarVisto, escribiendo } = require("./instagram");
+const { enviarMensaje, marcarVisto, escribiendo, enviarPrivateReply, responderComentario, suscribirWebhook, estadoSuscripcion } = require("./instagram");
+const { RESPUESTAS } = require("./knowledge");
 const { iniciarDigest } = require("./digest");
 
 const app  = express();
@@ -99,8 +100,47 @@ app.post("/webhook", async (req, res) => {
     for (const evento of eventos) {
       await procesarEvento(evento);
     }
+
+    // Comentarios en publicaciones (field "comments")
+    const cambios = entry.changes || [];
+    for (const cambio of cambios) {
+      if (cambio.field === "comments") {
+        await procesarComentario(cambio.value, entry.id);
+      }
+    }
   }
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Procesar un comentario en una publicación
+// Si pide info ("info", "precio", etc.) → le mandamos DM con la data básica
+// ─────────────────────────────────────────────────────────────────────────────
+
+const REGEX_PIDE_INFO = /\b(info|informacion|información|precio|precios|cu[aá]nto|valor|inscri\w*|anotar|dm|data|d[oó]nde|cu[aá]ndo)\b/i;
+
+async function procesarComentario(valor, cuentaPropiaId) {
+  const commentId = valor?.id;
+  const texto     = valor?.text || "";
+  const autorId   = valor?.from?.id;
+
+  if (!commentId || !autorId) return;
+
+  // Ignorar nuestros propios comentarios (evita loops con nuestras respuestas)
+  if (String(autorId) === String(cuentaPropiaId)) return;
+
+  console.log(`[ROC BOT] 💬 Comentario de ${valor?.from?.username || autorId}: "${texto}"`);
+
+  if (!REGEX_PIDE_INFO.test(texto)) return;
+
+  try {
+    // DM con la info básica de la carrera
+    await enviarPrivateReply(commentId, RESPUESTAS.comentarioInfo());
+    // Aviso público para que revise sus mensajes
+    await responderComentario(commentId, "¡Te mandamos toda la info por DM! 📩💀 Revisá tus mensajes.");
+  } catch (err) {
+    console.error(`[ROC BOT] Error procesando comentario ${commentId}:`, err.message);
+  }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Procesar un evento de mensajería individual
@@ -142,9 +182,25 @@ app.get("/", (_req, res) => {
   res.json({
     bot: "ROC Bot",
     estado: "activo 💀",
-    version: "1.0.0",
+    version: "1.1.0",
     evento: "ROC 2026 – 29 de noviembre – Campo de Mayo",
   });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /debug — estado de la suscripción del webhook (requiere verify token)
+// GET /debug?resuscribir=1 — fuerza re-suscripción
+// ─────────────────────────────────────────────────────────────────────────────
+
+app.get("/debug", async (req, res) => {
+  if (req.query.token !== process.env.VERIFY_TOKEN) return res.sendStatus(403);
+
+  const acciones = {};
+  if (req.query.resuscribir === "1") {
+    acciones.resuscripcion = await suscribirWebhook();
+  }
+  acciones.suscripcion_actual = await estadoSuscripcion();
+  res.json(acciones);
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -172,4 +228,7 @@ app.listen(PORT, () => {
   if (process.env.RESEND_API_KEY) {
     iniciarDigest();
   }
+
+  // Auto-suscribir el webhook a messages + comments al arrancar
+  suscribirWebhook();
 });
