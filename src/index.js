@@ -199,6 +199,26 @@ app.get("/debug", async (req, res) => {
   if (req.query.resuscribir === "1") {
     acciones.resuscripcion = await suscribirWebhook();
   }
+  // ?extender=1 — canjea el PAGE_ACCESS_TOKEN actual por uno de larga duración.
+  // El token nuevo se imprime SOLO en los logs de Railway (no en la respuesta HTTP).
+  if (req.query.extender === "1") {
+    try {
+      const axios = require("axios");
+      const r = await axios.get("https://graph.facebook.com/v20.0/oauth/access_token", {
+        params: {
+          grant_type: "fb_exchange_token",
+          client_id: "1647607492990459",
+          client_secret: process.env.APP_SECRET,
+          fb_exchange_token: process.env.PAGE_ACCESS_TOKEN,
+        },
+      });
+      console.log("[ROC BOT] 🔑 TOKEN DE LARGA DURACIÓN (copiar a Railway → PAGE_ACCESS_TOKEN):");
+      console.log(r.data.access_token);
+      acciones.extension = { ok: true, nota: "Token nuevo impreso en los logs de Railway" };
+    } catch (err) {
+      acciones.extension = { error: err.response?.data || err.message };
+    }
+  }
   acciones.suscripcion_actual = await estadoSuscripcion();
   res.json(acciones);
 });
