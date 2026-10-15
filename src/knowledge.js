@@ -168,6 +168,19 @@ const RESPUESTAS = {
     `¿Tenés otra duda? Escribime por acá.\n\n` +
     `*CORRER NO ES SUFICIENTE*`,
 
+  info: () =>
+    `💀 ROC 2026 — Race Obstacle Course\n\n` +
+    `🗓 ${INFO.evento.fecha}\n` +
+    `📍 ${INFO.evento.lugar}\n` +
+    `🏃 ${INFO.evento.distancia} · ${INFO.evento.obstaculos}\n\n` +
+    `${lineaPrecioActual()}\n\n` +
+    `⚡ Categorías: Open, Competitiva (${INFO.adicionales.competitiva}) y Elite (${INFO.adicionales.elite})\n` +
+    `👕 Remera opcional: ${INFO.adicionales.remera}\n` +
+    `👦 Edad mínima: 13 años\n` +
+    `✍️ El deslinde se firma online al inscribirte\n\n` +
+    `✅ Inscribite acá:\n${INFO.inscripciones_link}\n\n` +
+    `¿Querés saber algo más? Preguntame por horarios, precios, categorías, premios o reglamento.`,
+
   lugar: () =>
     `📍 *El evento se realiza en:*\n\n` +
     `Campo de Mayo\nProvincia de Buenos Aires\n\n` +
@@ -308,12 +321,16 @@ const RESPUESTAS = {
     `👇 ${INFO.inscripciones_link}`,
 
   no_entiendo: () =>
-    `No estoy seguro de entender tu consulta. 🤔 Ya se la paso al equipo para que te responda.\n\n` +
-    `Mientras tanto, puedo contarte sobre:\n\n` +
-    `📅 *fecha* · 💰 *precios* · ✅ *inscripcion*\n` +
-    `🕘 *horarios* · ⚡ *categorias* · 🏆 *premios*\n` +
-    `✍️ *deslinde* · 📋 *reglamento* · 💥 *obstaculos*\n\n` +
-    `Escribí alguna de esas palabras.`,
+    `Esa no la sé responder sola 🤔 — ya se la pasé al equipo y te contestan por acá.\n\n` +
+    `Mientras tanto, podés escribirme cualquiera de estas palabras:\n\n` +
+    `📌 INFO — resumen de la carrera\n` +
+    `💰 PRECIOS\n` +
+    `✅ INSCRIPCIÓN\n` +
+    `🕘 HORARIOS — qué salidas tienen lugar\n` +
+    `⚡ CATEGORÍAS\n` +
+    `🏆 PREMIOS\n` +
+    `✍️ DESLINDE\n` +
+    `📋 REGLAMENTO`,
 };
 
 module.exports = { INFO, RESPUESTAS, loteActual, hoyAR };

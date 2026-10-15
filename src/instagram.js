@@ -14,6 +14,11 @@ const axios = require("axios");
 function tokenEsInstagram(token) {
   return /^IG/.test(token || "");
 }
+// Instagram no muestra *negritas*: sacamos los asteriscos
+function limpiar(texto) {
+  return String(texto || "").replace(/\*/g, "");
+}
+
 function apiUrl() {
   return tokenEsInstagram(process.env.PAGE_ACCESS_TOKEN)
     ? "https://graph.instagram.com/v21.0"
@@ -37,7 +42,7 @@ async function enviarMensaje(recipientId, texto) {
       `${apiUrl()}/me/messages`,
       {
         recipient: { id: recipientId },
-        message: { text: texto },
+        message: { text: limpiar(texto) },
         messaging_type: "RESPONSE",
       },
       {
@@ -119,7 +124,7 @@ async function enviarPrivateReply(commentId, texto) {
       `${apiUrl()}/me/messages`,
       {
         recipient: { comment_id: commentId },
-        message: { text: texto },
+        message: { text: limpiar(texto) },
       },
       {
         params: { access_token: token },

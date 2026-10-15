@@ -12,6 +12,13 @@ const { registrarPreguntaSinRespuesta } = require("./digest");
 
 const INTENCIONES = [
   {
+    nombre: "info",
+    keywords: [
+      "info", "informacion", "data", "detalles", "mas datos", "quiero saber",
+      "me pasas", "me pasan", "me das", "me dan", "contame", "cuentame",
+    ],
+  },
+  {
     nombre: "mail_confirmacion",
     keywords: [
       "no me llego", "no llego el mail", "no recibi", "no me lleg",
@@ -57,7 +64,7 @@ const INTENCIONES = [
     nombre: "precios",
     keywords: [
       "precio", "cuánto", "cuanto", "cuesta", "vale", "valor",
-      "tarifa", "plata", "costo", "importe",
+      "tarifa", "plata", "costo", "importe", "sale", "salen", "abonar",
     ],
   },
   {
