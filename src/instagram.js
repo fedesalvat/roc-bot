@@ -5,7 +5,20 @@
 
 const axios = require("axios");
 
-const GRAPH_API_URL = "https://graph.facebook.com/v19.0";
+// Dos tipos de token posibles:
+//  • Token de "Instagram Login" (empieza con IGAA / IGQ) → graph.instagram.com
+//    Se genera en developers.facebook.com → app → Instagram → Configuración de la API
+//    con inicio de sesión de Instagram → "Generar token". Dura 60 días.
+//  • Token de página de Facebook (empieza con EAA) → graph.facebook.com
+// El bot detecta solo cuál es y usa la URL correcta.
+function tokenEsInstagram(token) {
+  return /^IG/.test(token || "");
+}
+function apiUrl() {
+  return tokenEsInstagram(process.env.PAGE_ACCESS_TOKEN)
+    ? "https://graph.instagram.com/v21.0"
+    : "https://graph.facebook.com/v19.0";
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Enviar mensaje de texto
@@ -21,7 +34,7 @@ async function enviarMensaje(recipientId, texto) {
 
   try {
     const response = await axios.post(
-      `${GRAPH_API_URL}/me/messages`,
+      `${apiUrl()}/me/messages`,
       {
         recipient: { id: recipientId },
         message: { text: texto },
@@ -54,7 +67,7 @@ async function marcarVisto(recipientId) {
 
   try {
     await axios.post(
-      `${GRAPH_API_URL}/me/messages`,
+      `${apiUrl()}/me/messages`,
       {
         recipient: { id: recipientId },
         sender_action: "mark_seen",
@@ -77,7 +90,7 @@ async function escribiendo(recipientId) {
 
   try {
     await axios.post(
-      `${GRAPH_API_URL}/me/messages`,
+      `${apiUrl()}/me/messages`,
       {
         recipient: { id: recipientId },
         sender_action: "typing_on",
@@ -103,7 +116,7 @@ async function enviarPrivateReply(commentId, texto) {
 
   try {
     const response = await axios.post(
-      `${GRAPH_API_URL}/me/messages`,
+      `${apiUrl()}/me/messages`,
       {
         recipient: { comment_id: commentId },
         message: { text: texto },
@@ -132,7 +145,7 @@ async function responderComentario(commentId, texto) {
 
   try {
     await axios.post(
-      `${GRAPH_API_URL}/${commentId}/replies`,
+      `${apiUrl()}/${commentId}/replies`,
       { message: texto },
       { params: { access_token: token } }
     );
@@ -156,7 +169,7 @@ async function suscribirWebhook() {
 
   try {
     const r = await axios.post(
-      `${GRAPH_API_URL}/${IG_ACCOUNT_ID}/subscribed_apps`,
+      `${apiUrl()}/${tokenEsInstagram(token) ? "me" : IG_ACCOUNT_ID}/subscribed_apps`,
       null,
       { params: { subscribed_fields: "messages,comments", access_token: token } }
     );
@@ -174,7 +187,7 @@ async function estadoSuscripcion() {
   if (!token) return { error: "PAGE_ACCESS_TOKEN no configurado" };
 
   try {
-    const r = await axios.get(`${GRAPH_API_URL}/${IG_ACCOUNT_ID}/subscribed_apps`, {
+    const r = await axios.get(`${apiUrl()}/${tokenEsInstagram(token) ? "me" : IG_ACCOUNT_ID}/subscribed_apps`, {
       params: { access_token: token },
     });
     return r.data;
@@ -183,4 +196,4 @@ async function estadoSuscripcion() {
   }
 }
 
-module.exports = { enviarMensaje, marcarVisto, escribiendo, enviarPrivateReply, responderComentario, suscribirWebhook, estadoSuscripcion };
+module.exports = { tokenEsInstagram, apiUrl, enviarMensaje, marcarVisto, escribiendo, enviarPrivateReply, responderComentario, suscribirWebhook, estadoSuscripcion };

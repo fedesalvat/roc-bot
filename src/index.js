@@ -8,7 +8,7 @@ require("dotenv").config();
 const express = require("express");
 const crypto  = require("crypto");
 const { generarRespuesta } = require("./messageHandler");
-const { enviarMensaje, marcarVisto, escribiendo, enviarPrivateReply, responderComentario, suscribirWebhook, estadoSuscripcion } = require("./instagram");
+const { tokenEsInstagram, enviarMensaje, marcarVisto, escribiendo, enviarPrivateReply, responderComentario, suscribirWebhook, estadoSuscripcion } = require("./instagram");
 const { RESPUESTAS } = require("./knowledge");
 const { iniciarDigest } = require("./digest");
 
@@ -50,24 +50,27 @@ app.get("/webhook", (req, res) => {
 // Verificar firma X-Hub-Signature-256
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Meta firma con el secreto de la app de Facebook (APP_SECRET) o, si el webhook
+// es del producto "Instagram con inicio de sesión de Instagram", con el secreto
+// de la app de Instagram (INSTAGRAM_APP_SECRET). Aceptamos cualquiera de los dos.
 function verificarFirma(req) {
-  const appSecret = process.env.APP_SECRET;
-  if (!appSecret) {
+  const secretos = [process.env.APP_SECRET, process.env.INSTAGRAM_APP_SECRET].filter(Boolean);
+  if (secretos.length === 0) {
     console.warn("[ROC BOT] APP_SECRET no configurado — saltando verificación de firma.");
     return true;
   }
 
   const signature = req.headers["x-hub-signature-256"];
-  if (!signature) return false;
+  if (!signature || !req.rawBody) return false;
 
-  const expected =
-    "sha256=" +
-    crypto.createHmac("sha256", appSecret).update(req.rawBody).digest("hex");
-
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expected)
-  );
+  return secretos.some((secreto) => {
+    const expected =
+      "sha256=" + crypto.createHmac("sha256", secreto).update(req.rawBody).digest("hex");
+    return (
+      signature.length === expected.length &&
+      crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
+    );
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -167,7 +170,7 @@ async function procesarEvento(evento) {
     await sleep(800);
 
     // Generar y enviar respuesta (pasar senderId como usuario para el digest)
-    const respuesta = generarRespuesta(textoUsuario, senderId);
+    const respuesta = await generarRespuesta(textoUsuario, senderId);
     await enviarMensaje(senderId, respuesta);
   } catch (err) {
     console.error(`[ROC BOT] Error procesando evento para ${senderId}:`, err.message);
@@ -182,7 +185,7 @@ app.get("/", (_req, res) => {
   res.json({
     bot: "ROC Bot",
     estado: "activo 💀",
-    version: "1.1.0",
+    version: "1.2.0",
     evento: "ROC 2026 – 29 de noviembre – Campo de Mayo",
   });
 });
@@ -219,6 +222,23 @@ app.get("/debug", async (req, res) => {
       acciones.extension = { error: err.response?.data || err.message };
     }
   }
+  // ?refrescar=1 — renueva un token de Instagram Login por 60 días más.
+  // El token nuevo se imprime SOLO en los logs de Railway.
+  if (req.query.refrescar === "1") {
+    try {
+      const axios = require("axios");
+      const r = await axios.get("https://graph.instagram.com/refresh_access_token", {
+        params: { grant_type: "ig_refresh_token", access_token: process.env.PAGE_ACCESS_TOKEN },
+      });
+      console.log("[ROC BOT] 🔑 TOKEN RENOVADO (copiar a Railway → PAGE_ACCESS_TOKEN):");
+      console.log(r.data.access_token);
+      acciones.refresco = { ok: true, vence_en_dias: Math.round((r.data.expires_in || 0) / 86400), nota: "Token nuevo impreso en los logs de Railway" };
+    } catch (err) {
+      acciones.refresco = { error: err.response?.data || err.message };
+    }
+  }
+  acciones.tipo_token = tokenEsInstagram(process.env.PAGE_ACCESS_TOKEN) ? "instagram_login" : "pagina_facebook";
+  acciones.firma_instagram_secret = process.env.INSTAGRAM_APP_SECRET ? "configurado" : "no";
   acciones.suscripcion_actual = await estadoSuscripcion();
   res.json(acciones);
 });

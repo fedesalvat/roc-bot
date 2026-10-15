@@ -1,68 +1,136 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // ROC BOT — Base de conocimiento
 // Toda la info del evento ROC 2026
+// Actualizado 15/10/2026: precio por lote automático según la fecha,
+// salidas con disponibilidad en vivo, deslinde online, edad mínima 13.
 // ─────────────────────────────────────────────────────────────────────────────
+
+const axios = require("axios");
 
 const INFO = {
   nombre: "ROC – Race Obstacle Course",
   tagline: "ROC — CORRER NO ES SUFICIENTE",
   instagram: "@carreraroc",
   web: "rocargentina.com",
+  mail: "info@rocargentina.com",
 
   evento: {
     fecha: "Domingo 29 de noviembre de 2026",
     lugar: "Campo de Mayo, Provincia de Buenos Aires",
     distancia: "8 km",
     obstaculos: "30+ obstáculos",
-    apertura_inscripciones: "Domingo 13 de julio de 2026",
-    limite_pagos: "Lunes 23 de noviembre de 2026",
+    limite_pagos: "lunes 23 de noviembre",
+    cierre_inscripciones: "24 de noviembre",
   },
 
-  precios: [
-    { periodo: "13 Jul – 9 Ago",   precio: "$69.000" },
-    { periodo: "10 Ago – 18 Oct",  precio: "$79.000" },
-    { periodo: "19 Oct – 23 Nov",  precio: "$89.000" },
-    { periodo: "Día de carrera",   precio: "$100.000" },
+  // Mismos lotes que roc-inscripciones/lib/pricing.ts
+  lotes: [
+    { periodo: "13 Jul – 9 Ago",  desde: "2026-07-13", hasta: "2026-08-09", precio: 69000 },
+    { periodo: "10 Ago – 18 Oct", desde: "2026-08-10", hasta: "2026-10-18", precio: 79000 },
+    { periodo: "19 Oct – 23 Nov", desde: "2026-10-19", hasta: "2026-11-23", precio: 89000 },
   ],
 
   adicionales: {
-    elite:              "+$15.000",
-    competitiva:        "+$7.000",
-    remera:             "+$15.000",
-    cambio_participante:"+$10.000",
+    elite:               "+$15.000",
+    competitiva:         "+$7.000",
+    remera:              "+$15.000",
+    cambio_participante: "$10.000",
   },
 
   premios: {
-    elite: {
-      primero:  "$100.000",
-      segundo:  "$75.000",
-      tercero:  "$50.000",
-    },
-    competitiva: {
-      primero:  "$45.000",
-      segundo:  "$35.000",
-      tercero:  "$25.000",
-    },
+    elite:       { primero: "$100.000", segundo: "$75.000", tercero: "$50.000" },
+    competitiva: { primero: "$45.000",  segundo: "$35.000", tercero: "$25.000" },
   },
 
   inscripciones_link: "https://inscripcion.rocargentina.com/inscripcion",
+  disponibilidad_url: "https://inscripcion.rocargentina.com/api/disponibilidad",
 
-  categorias: [
-    "Open (salidas 10:30 / 11:00 / 11:30hs)",
-    "Competitiva (salida 10:00hs)",
-    "Elite (salida 9:30hs, obstáculos obligatorios, premiada)",
-  ],
-
-  descripcion: [
-    "ROC es una carrera de obstáculos de alto rendimiento.",
-    "8 km de terreno exigente con más de 30 obstáculos diseñados para ponerte al límite.",
-    "Tiene lugar en Campo de Mayo, uno de los predios más desafiantes del país.",
-    "No es una carrera divertida — es una prueba real. Correr no es suficiente.",
+  // Salidas (categoría + horario) — mismas claves que /api/disponibilidad
+  salidas: [
+    { clave: "ELITE__9:30",       texto: "Elite — 9:30 hs" },
+    { clave: "COMPETITIVA__10:00", texto: "Competitiva — 10:00 hs" },
+    { clave: "OPEN__10:30",       texto: "Open — 10:30 hs" },
+    { clave: "OPEN__11:00",       texto: "Open — 11:00 hs" },
+    { clave: "OPEN__11:30",       texto: "Open — 11:30 hs" },
+    { clave: "OPEN__12:00",       texto: "Open — 12:00 hs" },
   ],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// RESPUESTAS por intención
+// Helpers de precio (por fecha, hora Argentina)
+// ─────────────────────────────────────────────────────────────────────────────
+
+function hoyAR() {
+  // YYYY-MM-DD en hora Argentina
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires" }).format(new Date());
+}
+
+function peso(n) {
+  return "$" + n.toLocaleString("es-AR");
+}
+
+function fechaCorta(iso) {
+  const meses = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  const [, m, d] = iso.split("-").map(Number);
+  return `${d} de ${meses[m - 1]}`;
+}
+
+function loteActual() {
+  const hoy = hoyAR();
+  const i = INFO.lotes.findIndex(l => hoy >= l.desde && hoy <= l.hasta);
+  if (i === -1) return null;
+  return { ...INFO.lotes[i], siguiente: INFO.lotes[i + 1] || null };
+}
+
+function inscripcionesCerradas() {
+  return hoyAR() > "2026-11-23";
+}
+
+function lineaPrecioActual() {
+  if (inscripcionesCerradas()) return "Las inscripciones online ya cerraron.";
+  const l = loteActual();
+  if (!l) return "";
+  let txt = `💰 Precio actual: *${peso(l.precio)}* (categoría Open, sin remera)`;
+  if (l.siguiente) txt += `\n⚠️ El ${fechaCorta(l.siguiente.desde)} sube a ${peso(l.siguiente.precio)}`;
+  else txt += `\n⚠️ Es el último lote — se puede pagar hasta el ${INFO.evento.limite_pagos}`;
+  return txt;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Disponibilidad de salidas en vivo (cache 5 min)
+// ─────────────────────────────────────────────────────────────────────────────
+
+let cacheDisp = { t: 0, llenos: null };
+
+async function obtenerLlenos() {
+  if (cacheDisp.llenos && Date.now() - cacheDisp.t < 5 * 60 * 1000) return cacheDisp.llenos;
+  try {
+    const r = await axios.get(INFO.disponibilidad_url, { timeout: 4000 });
+    const llenos = r.data?.llenos;
+    if (llenos && Object.keys(llenos).length) {
+      cacheDisp = { t: Date.now(), llenos };
+      return llenos;
+    }
+  } catch (err) {
+    console.warn("[ROC BOT] No se pudo leer disponibilidad:", err.message);
+  }
+  return cacheDisp.llenos; // puede ser null si nunca anduvo
+}
+
+async function textoSalidas() {
+  const llenos = await obtenerLlenos();
+  if (!llenos) {
+    return INFO.salidas.map(s => `• ${s.texto}`).join("\n") +
+      `\n\nAlgunas salidas ya están completas — en el formulario ves cuáles quedan.`;
+  }
+  return INFO.salidas
+    .filter(s => s.clave in llenos)
+    .map(s => `• ${s.texto}${llenos[s.clave] ? " — ❌ COMPLETA" : " — ✅ hay lugar"}`)
+    .join("\n");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RESPUESTAS por intención (pueden ser async)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RESPUESTAS = {
@@ -70,12 +138,13 @@ const RESPUESTAS = {
   bienvenida: () =>
     `💀 ¡Bienvenido a ROC!\n\n` +
     `*"CORRER NO ES SUFICIENTE"*\n\n` +
-    `Soy el bot oficial de @carreraroc. Puedo ayudarte con:\n\n` +
+    `Soy el asistente automático de @carreraroc. Puedo ayudarte con:\n\n` +
     `📅 Fecha y lugar\n` +
     `💰 Precios e inscripción\n` +
+    `🕘 Horarios de salida\n` +
     `🏆 Premios y categorías\n` +
-    `📋 Reglamento\n` +
-    `❓ Preguntas frecuentes\n\n` +
+    `✍️ Deslinde\n` +
+    `📋 Reglamento\n\n` +
     `¿Qué querés saber?`,
 
   fecha: () =>
@@ -83,47 +152,64 @@ const RESPUESTAS = {
     `🗓 ${INFO.evento.fecha}\n` +
     `📍 ${INFO.evento.lugar}\n` +
     `🏃 ${INFO.evento.distancia} · ${INFO.evento.obstaculos}\n\n` +
-    `✅ ¡Las inscripciones ya están abiertas!\n${INFO.inscripciones_link}`,
+    (inscripcionesCerradas()
+      ? `Las inscripciones online ya cerraron.`
+      : `✅ Inscripciones abiertas hasta el ${INFO.evento.cierre_inscripciones}:\n${INFO.inscripciones_link}`),
 
   // DM que se envía cuando alguien comenta pidiendo info en una publicación
   comentarioInfo: () =>
-    `💀 ¡Hola! Nos pediste info de *ROC 2026* — acá va:\n\n` +
+    `💀 ¡Hola! Nos pediste info de *ROC 2026*. Acá va:\n\n` +
     `🗓 ${INFO.evento.fecha}\n` +
     `📍 ${INFO.evento.lugar}\n` +
     `🏃 ${INFO.evento.distancia} · ${INFO.evento.obstaculos}\n\n` +
-    `💰 Precio actual: *$69.000* (sube el 10 de agosto)\n` +
+    `${lineaPrecioActual()}\n` +
     `Categorías: Open, Competitiva y Elite\n\n` +
     `✅ Inscribite acá:\n${INFO.inscripciones_link}\n\n` +
-    `¿Tenés otra duda? Escribime acá y te respondo al toque.\n\n` +
+    `¿Tenés otra duda? Escribime por acá.\n\n` +
     `*CORRER NO ES SUFICIENTE*`,
 
   lugar: () =>
     `📍 *El evento se realiza en:*\n\n` +
     `Campo de Mayo\nProvincia de Buenos Aires\n\n` +
-    `Es uno de los predios más exigentes del país — terreno variado, desniveles reales y 30+ obstáculos diseñados para ponerte al límite.`,
+    `Es uno de los predios más exigentes del país: terreno variado, desniveles reales y 30+ obstáculos diseñados para ponerte al límite.`,
 
   precios: () => {
-    const lista = INFO.precios
-      .map(p => `• ${p.periodo}: *${p.precio}*`)
+    const hoy = hoyAR();
+    const lista = INFO.lotes
+      .map(l => {
+        const actual = hoy >= l.desde && hoy <= l.hasta;
+        const pasado = hoy > l.hasta;
+        return `• ${l.periodo}: *${peso(l.precio)}*${actual ? "  👈 HOY" : pasado ? " (vencido)" : ""}`;
+      })
       .join("\n");
     return (
-      `💰 *Precios ROC 2026* (sin remera)\n\n` +
+      `💰 *Precios ROC 2026* (categoría Open, sin remera)\n\n` +
       lista +
       `\n\n` +
       `*Adicionales:*\n` +
-      `• Categoría Elite: ${INFO.adicionales.elite}\n` +
       `• Categoría Competitiva: ${INFO.adicionales.competitiva}\n` +
+      `• Categoría Elite: ${INFO.adicionales.elite}\n` +
       `• Remera oficial: ${INFO.adicionales.remera}\n` +
       `• Cambio de participante: ${INFO.adicionales.cambio_participante}\n\n` +
-      `⏰ Fecha límite de pago: *${INFO.evento.limite_pagos}*`
+      `⏰ Fecha límite de pago: *${INFO.evento.limite_pagos}*\n\n` +
+      `👇 Inscribite acá:\n${INFO.inscripciones_link}`
     );
   },
 
   inscripcion: () =>
-    `✅ *Inscribite en ROC 2026*\n\n` +
-    `👇 Entrá acá:\n${INFO.inscripciones_link}\n\n` +
-    `Las inscripciones abren el *${INFO.evento.apertura_inscripciones}*.\n\n` +
-    `El precio sube a medida que se acerca la fecha — inscribite temprano.`,
+    inscripcionesCerradas()
+      ? `Las inscripciones online ya cerraron. Para consultas escribinos a ${INFO.mail}.`
+      : `✅ *Inscribite en ROC 2026*\n\n` +
+        `👇 Entrá acá:\n${INFO.inscripciones_link}\n\n` +
+        `${lineaPrecioActual()}\n\n` +
+        `Elegís categoría y horario de salida, firmás el deslinde online y pagás con MercadoPago. ` +
+        `Al confirmarse el pago te llega un mail con tu número de corredor y tu QR.`,
+
+  horarios: async () =>
+    `🕘 *Salidas ROC 2026* (29/11)\n\n` +
+    (await textoSalidas()) +
+    `\n\nElegís tu salida al inscribirte:\n${INFO.inscripciones_link}\n\n` +
+    `Si querés correr con amigos, anótense todos en la misma salida.`,
 
   premios: () =>
     `🏆 *Premios ROC 2026*\n\n` +
@@ -138,29 +224,53 @@ const RESPUESTAS = {
 
   categorias: () =>
     `⚡ *Categorías ROC 2026*\n\n` +
-    `*General*\n` +
-    `¡Hace el circuito a tu ritmo intentando hacer todos los obstáculos! En caso de no querer/poder hacer alguno podés pagar una penalidad y seguir.\n\n` +
-    `*Competitiva (+$7.000)*\n` +
-    `¿Querés competir pero no estás seguro de poder completar todos los obstáculos? Esta categoría es para vos. ¡Vení a intentar superarte!\n\n` +
-    `*Elite (+$15.000)*\n` +
-    `Obstáculos 100% obligatorios. En caso de no poder superar alguno serás descalificado. La categoría más exigente.\n\n` +
-    `¿Cuál es tu nivel?`,
+    `*Open*\n` +
+    `Hacé el circuito a tu ritmo intentando todos los obstáculos. Si no querés o no podés hacer alguno, pagás una penalidad y seguís.\n\n` +
+    `*Competitiva (${INFO.adicionales.competitiva})*\n` +
+    `¿Querés competir pero no estás seguro de completar todos los obstáculos? Esta categoría es para vos. Es premiada.\n\n` +
+    `*Elite (${INFO.adicionales.elite})*\n` +
+    `Obstáculos 100% obligatorios: si no superás uno, quedás descalificado. La más exigente, y premiada.\n\n` +
+    `Escribí *horarios* para ver qué salidas tienen lugar.`,
 
   reglamento: () =>
     `📋 *Reglamento ROC 2026*\n\n` +
     `Los puntos clave:\n\n` +
     `• Distancia: 8 km con 30+ obstáculos\n` +
-    `• Categoría Elite: obstáculos obligatorios, sin bypass. Si no superás uno, quedás descalificado\n` +
-    `• Categoría Competitiva: penalidad por obstáculo no completado\n` +
-    `• Categoría General: podés pagar penalidad y seguir si no completás un obstáculo\n` +
-    `• Menores de 16 años no pueden participar\n\n` +
-    `Para el reglamento completo visitá: *rocargentina.com*`,
+    `• Elite: obstáculos obligatorios, sin bypass. Si no superás uno, quedás descalificado\n` +
+    `• Competitiva: penalidad por obstáculo no completado\n` +
+    `• Open: podés pagar penalidad y seguir si no completás un obstáculo\n` +
+    `• Edad mínima: 13 años cumplidos al 29/11. Los menores de 18 necesitan la firma de su padre, madre o tutor en el deslinde\n` +
+    `• Todos los corredores firman el deslinde online\n\n` +
+    `Reglamento completo en *rocargentina.com*`,
+
+  edad: () =>
+    `👦 *Edad mínima*\n\n` +
+    `Pueden correr chicos desde *13 años* cumplidos al 29 de noviembre de 2026.\n\n` +
+    `Si el corredor es menor de 18, el deslinde lo firma también su padre, madre o tutor (se hace online, en la misma inscripción).`,
+
+  deslinde: () =>
+    `✍️ *Deslinde ROC 2026*\n\n` +
+    `Todos los corredores firman el deslinde *online*, no hace falta llevar nada impreso.\n\n` +
+    `• Si te inscribís ahora, lo firmás en el mismo formulario.\n` +
+    `• Si ya estabas inscripto, te llegó un mail con el link para firmarlo (revisá también spam/promociones).\n\n` +
+    `Si no encontrás el mail, escribinos a ${INFO.mail} con tu nombre y DNI y te lo reenviamos.`,
+
+  remera: () =>
+    `👕 *Remera oficial ROC*\n\n` +
+    `La remera es opcional y cuesta ${INFO.adicionales.remera}. La agregás al inscribirte.\n\n` +
+    `👇 ${INFO.inscripciones_link}`,
+
+  mail_confirmacion: () =>
+    `📩 *¿No te llegó el mail de confirmación?*\n\n` +
+    `El mail con tu número y QR llega cuando MercadoPago confirma el pago. Revisá spam y promociones.\n\n` +
+    `Si no aparece, escribinos a ${INFO.mail} con tu nombre y DNI y lo revisamos.`,
 
   contacto: () =>
     `📬 *Contacto ROC*\n\n` +
+    `Mail: ${INFO.mail}\n` +
     `Instagram: @carreraroc\n` +
     `Web: rocargentina.com\n\n` +
-    `Para consultas específicas escribinos por acá y te respondemos a la brevedad. 💀`,
+    `Para consultas puntuales escribinos por acá y te responde alguien del equipo. 💀`,
 
   que_es: () =>
     `💀 *¿Qué es ROC?*\n\n` +
@@ -179,7 +289,7 @@ const RESPUESTAS = {
     `• Paredes de diferentes alturas\n` +
     `• Estructuras con obstáculos aéreos\n` +
     `• Subidas en soga\n` +
-    `• Trapadoras\n` +
+    `• Trepadoras\n` +
     `• Y muchos más a lo largo de los 8 km\n\n` +
     `*CORRER NO ES SUFICIENTE.* 💀`,
 
@@ -189,28 +299,21 @@ const RESPUESTAS = {
     `• 🍔 Foodtrucks\n` +
     `• 🎵 Música en vivo\n` +
     `• Y muchas sorpresas más\n\n` +
-    `Viene con todo para que sea una experiencia completa. 💀`,
+    `Vení con todo, es una experiencia completa. 💀`,
 
   grupos: () =>
-    `👥 *Inscripciones grupales*\n\n` +
-    `En esta edición solo tenemos inscripciones individuales.\n\n` +
-    `Si tenés un grupo de amigos o de entrenamiento, ` +
-    `seleccionen todos el mismo horario y corren juntos!\n\n` +
-    `👇 Inscribite acá:\n${INFO.inscripciones_link}`,
+    `👥 *Correr en grupo*\n\n` +
+    `Las inscripciones son individuales, pero si se anotan todos en la *misma salida* corren juntos.\n\n` +
+    `Escribí *horarios* para ver qué salidas tienen lugar.\n\n` +
+    `👇 ${INFO.inscripciones_link}`,
 
   no_entiendo: () =>
-    `No estoy seguro de entender tu consulta. 🤔\n\n` +
-    `Puedo ayudarte con:\n\n` +
-    `📅 *fecha* — Cuándo y dónde es ROC\n` +
-    `💰 *precios* — Valores e inscripción\n` +
-    `🏆 *premios* — Qué se lleva el ganador\n` +
-    `⚡ *categorías* — General, Competitiva o Elite\n` +
-    `📋 *reglamento* — Las reglas del juego\n` +
-    `✅ *inscripcion* — Cómo anotarte\n` +
-    `💥 *obstáculos* — Qué nos espera en el recorrido\n` +
-    `🎉 *servicios* — Qué hay en el predio\n` +
-    `👥 *grupos* — Cómo correr con amigos\n\n` +
-    `Escribí alguna de esas palabras y te cuento todo.`,
+    `No estoy seguro de entender tu consulta. 🤔 Ya se la paso al equipo para que te responda.\n\n` +
+    `Mientras tanto, puedo contarte sobre:\n\n` +
+    `📅 *fecha* · 💰 *precios* · ✅ *inscripcion*\n` +
+    `🕘 *horarios* · ⚡ *categorias* · 🏆 *premios*\n` +
+    `✍️ *deslinde* · 📋 *reglamento* · 💥 *obstaculos*\n\n` +
+    `Escribí alguna de esas palabras.`,
 };
 
-module.exports = { INFO, RESPUESTAS };
+module.exports = { INFO, RESPUESTAS, loteActual, hoyAR };

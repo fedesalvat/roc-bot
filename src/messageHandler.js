@@ -12,6 +12,40 @@ const { registrarPreguntaSinRespuesta } = require("./digest");
 
 const INTENCIONES = [
   {
+    nombre: "mail_confirmacion",
+    keywords: [
+      "no me llego", "no llego el mail", "no recibi", "no me lleg",
+      "mail de confirmacion", "confirmacion", "mi numero", "numero de corredor",
+      "qr",
+    ],
+  },
+  {
+    nombre: "deslinde",
+    keywords: [
+      "deslinde", "deslindes", "firmar", "firma", "apto", "declaracion jurada",
+      "acta", "responsabilidad",
+    ],
+  },
+  {
+    nombre: "edad",
+    keywords: [
+      "edad", "menor", "menores", "mi hijo", "mi hija", "anos", "años",
+      "chico", "chicos", "nene", "adolescente",
+    ],
+  },
+  {
+    nombre: "horarios",
+    keywords: [
+      "horario", "horarios", "salida", "salidas", "hora", "largada",
+      "a que hora", "turno", "cupo", "cupos", "lugar disponible", "hay lugar",
+      "agotad", "lleno",
+    ],
+  },
+  {
+    nombre: "remera",
+    keywords: ["remera", "camiseta", "talle", "kit"],
+  },
+  {
     nombre: "inscripcion",
     keywords: [
       "inscri", "anotar", "registr", "como me anoto", "quiero correr",
@@ -73,7 +107,7 @@ const INTENCIONES = [
     nombre: "obstaculos",
     keywords: [
       "obstaculo", "obstaculos", "pared", "soga", "trapadora",
-      "aereo", "estructura", "militar", "que obstaculos", "obstáculo",
+      "aereo", "estructura", "militar", "que obstaculos", "obstáculo", "trepadora",
     ],
   },
   {
@@ -95,7 +129,7 @@ const INTENCIONES = [
   {
     nombre: "contacto",
     keywords: [
-      "contacto", "mail", "email", "whatsapp", "hablar",
+      "contacto", "mail", "email", "correo", "whatsapp", "hablar",
       "comunicar", "teléfono", "telefono",
     ],
   },
@@ -127,11 +161,13 @@ function normalizar(texto) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function detectarIntencion(texto) {
-  const normalizado = normalizar(texto);
+  // Se compara al inicio de palabra (" " + kw) para que, por ejemplo,
+  // "ahora" no dispare "hora" ni "contacto" dispare "acta".
+  const normalizado = " " + normalizar(texto).replace(/\s+/g, " ");
 
   for (const intencion of INTENCIONES) {
     for (const kw of intencion.keywords) {
-      if (normalizado.includes(normalizar(kw))) {
+      if (normalizado.includes(" " + normalizar(kw))) {
         return intencion.nombre;
       }
     }
@@ -144,7 +180,7 @@ function detectarIntencion(texto) {
 // Generar respuesta
 // ─────────────────────────────────────────────────────────────────────────────
 
-function generarRespuesta(mensajeUsuario, usuarioIg = null) {
+async function generarRespuesta(mensajeUsuario, usuarioIg = null) {
   if (!mensajeUsuario || mensajeUsuario.trim() === "") {
     return RESPUESTAS.bienvenida();
   }
@@ -154,7 +190,7 @@ function generarRespuesta(mensajeUsuario, usuarioIg = null) {
   console.log(`[ROC BOT] Mensaje: "${mensajeUsuario}" → Intención: ${intencion || "no detectada"}`);
 
   if (intencion && RESPUESTAS[intencion]) {
-    return RESPUESTAS[intencion]();
+    return await RESPUESTAS[intencion]();
   }
 
   // No se entendió → registrar para el digest diario
