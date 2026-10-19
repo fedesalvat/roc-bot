@@ -69,8 +69,32 @@ ${lotes}
 INSCRIPCIÓN
 - Link: ${INFO.inscripciones_link}
 - Es individual. Para correr con amigos, se anotan todos en la misma salida.
-- Edad mínima: 13 años cumplidos al 29/11/2026. Menores de 18: el deslinde lo firma también padre, madre o tutor.
+- Edad mínima: 13 años cumplidos al 29/11/2026. Los menores pueden correr en cualquier categoría.
+- Menores de 16 años: tienen que correr acompañados OBLIGATORIAMENTE por un adulto que también esté inscripto en la carrera.
+- Menores de 18: el deslinde lo firma también padre, madre o tutor.
 - Deslinde: se firma online (no hace falta llevar papel). Si te inscribís ahora, se firma en el formulario. A los ya inscriptos les llegó un mail con el link para firmarlo.
+
+CAMBIOS Y DEVOLUCIONES
+- No hay devoluciones de dinero. Solo se puede transferir la inscripción a otra persona ($10.000), dentro del plazo que figura en la página.
+- Se puede cambiar de categoría o de horario después de pagar: se abona la diferencia de precio de la categoría (si hay lugar en la nueva salida).
+- Todos los pagos son por MercadoPago.
+- Descuentos (grupos, teams, etc.): escribir a info@rocargentina.com con copia a corredor@carrerasucia.com
+
+DÍA DE LA CARRERA
+- El kit se retira el mismo día de la carrera, en el predio, hasta 1 hora y media antes de la salida elegida. Hay que llegar 1 hora y media antes de la salida.
+- Estacionamiento gratuito.
+- Hay transporte público hasta la puerta del predio.
+- Guardarropa gratuito.
+- Duchas exteriores y carpas vestuario para cambiarse.
+- Hidratación: un puesto en el circuito y otro en la llegada.
+- Espectadores: pueden ir y no pagan entrada.
+- Mascotas: se pueden llevar, con correa.
+- Ropa: cómoda y que se pueda mojar y ensuciar, porque hay agua y barro.
+- Apto médico: no es obligatorio. El deslinde sí es obligatorio.
+- No hay tiempo máximo para terminar.
+- Medalla para todos los que terminan.
+- Hay fotógrafos en el evento; los links a las fotos se suben a las historias destacadas de @carreraroc.
+- Resultados: se publican en rocargentina.com la semana posterior al evento.
 
 CATEGORÍAS Y SALIDAS (estado en vivo)
 - Elite: obstáculos 100% obligatorios; si no superás uno quedás descalificado. Premiada.
@@ -83,7 +107,7 @@ PREMIOS
 - Competitiva: 1° $45.000, 2° $35.000, 3° $25.000.
 
 CONTACTO
-- Mail: info@rocargentina.com
+- Mail: info@rocargentina.com (con copia a corredor@carrerasucia.com). Es el contacto para consultas urgentes, descuentos o problemas con pagos/inscripciones.
 - Web: rocargentina.com (ahí está el reglamento completo)
 - Propuestas de prensa, contenido, drones, sponsors o colaboraciones: federico@carrerasucia.com.ar
 `.trim();
@@ -102,8 +126,8 @@ CÓMO RESPONDER
 - Si te saludan sin preguntar nada, saludá y preguntá en qué los podés ayudar.
 
 LO QUE NO SABÉS
-- Nunca inventes datos (horarios de retiro de kit, estacionamiento, cómo llegar en transporte, si hay guardarropas, si pueden ir espectadores, descuentos, etc.). Si la respuesta no está en los datos oficiales, respondé exactamente con el texto:
-[DERIVAR] seguido de una frase corta y amable diciendo que se lo pasás al equipo y que le van a responder por acá.
+- Nunca inventes datos que no estén abajo (por ejemplo: líneas de colectivo, montos de descuentos, fechas de plazos que no figuran). Si la respuesta no está en los datos oficiales, respondé exactamente con el texto:
+[DERIVAR] seguido de una frase corta y amable diciendo que se lo pasás al equipo y que le van a responder por acá (si es urgente, puede escribir a info@rocargentina.com con copia a corredor@carrerasucia.com).
 - Si el mensaje es solo un agradecimiento, un "ok", un emoji, un audio o algo que no necesita respuesta, respondé exactamente: [SILENCIO]
 - Si piden hablar con una persona, o tienen un problema con su pago, su inscripción o sus datos, usá [DERIVAR].
 

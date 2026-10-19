@@ -13,6 +13,7 @@ const INFO = {
   instagram: "@carreraroc",
   web: "rocargentina.com",
   mail: "info@rocargentina.com",
+  mail_copia: "corredor@carrerasucia.com",
 
   evento: {
     fecha: "Domingo 29 de noviembre de 2026",
@@ -176,7 +177,7 @@ const RESPUESTAS = {
     `${lineaPrecioActual()}\n\n` +
     `⚡ Categorías: Open, Competitiva (${INFO.adicionales.competitiva}) y Elite (${INFO.adicionales.elite})\n` +
     `👕 Remera opcional: ${INFO.adicionales.remera}\n` +
-    `👦 Edad mínima: 13 años\n` +
+    `👦 Edad mínima: 13 años (menores de 16, acompañados por un adulto inscripto)\n` +
     `✍️ El deslinde se firma online al inscribirte\n\n` +
     `✅ Inscribite acá:\n${INFO.inscripciones_link}\n\n` +
     `¿Querés saber algo más? Preguntame por horarios, precios, categorías, premios o reglamento.`,
@@ -252,14 +253,36 @@ const RESPUESTAS = {
     `• Elite: obstáculos obligatorios, sin bypass. Si no superás uno, quedás descalificado\n` +
     `• Competitiva: penalidad por obstáculo no completado\n` +
     `• Open: podés pagar penalidad y seguir si no completás un obstáculo\n` +
-    `• Edad mínima: 13 años cumplidos al 29/11. Los menores de 18 necesitan la firma de su padre, madre o tutor en el deslinde\n` +
+    `• Edad mínima: 13 años cumplidos al 29/11. Menores de 16: obligatorio correr con un adulto inscripto. Menores de 18: firma el deslinde también padre, madre o tutor\n` +
+    `• No hay tiempo máximo. Medalla para todos los que terminan\n` +
     `• Todos los corredores firman el deslinde online\n\n` +
     `Reglamento completo en *rocargentina.com*`,
 
   edad: () =>
-    `👦 *Edad mínima*\n\n` +
-    `Pueden correr chicos desde *13 años* cumplidos al 29 de noviembre de 2026.\n\n` +
-    `Si el corredor es menor de 18, el deslinde lo firma también su padre, madre o tutor (se hace online, en la misma inscripción).`,
+    `👦 Edad mínima: 13 años cumplidos al 29 de noviembre de 2026. Pueden correr en cualquier categoría.\n\n` +
+    `Los menores de 16 tienen que correr obligatoriamente acompañados por un adulto que también esté inscripto.\n\n` +
+    `Para menores de 18, el deslinde lo firma también el padre, la madre o el tutor (online, en la misma inscripción).`,
+
+  dia_carrera: () =>
+    `🏁 Día de la carrera\n\n` +
+    `• Llegá 1 hora y media antes de tu salida: ahí retirás el kit\n` +
+    `• Estacionamiento gratis y transporte público hasta la puerta del predio\n` +
+    `• Guardarropa gratis, duchas exteriores y carpas vestuario\n` +
+    `• Hidratación en el circuito y en la llegada\n` +
+    `• Traé ropa cómoda que se pueda mojar y ensuciar: hay agua y barro 💦\n` +
+    `• Espectadores sin cargo y mascotas con correa\n` +
+    `• No hace falta apto médico: sí es obligatorio firmar el deslinde`,
+
+  devoluciones: () =>
+    `No hay devoluciones de dinero, pero podés transferir tu inscripción a otra persona ($10.000) dentro del plazo que figura en la página.\n\n` +
+    `Si querés cambiar de categoría u horario, se puede: pagás la diferencia de precio.`,
+
+  descuentos: () =>
+    `Para descuentos escribinos a ${INFO.mail} con copia a corredor@carrerasucia.com y te pasamos la info. 🙌`,
+
+  fotos_resultados: () =>
+    `📸 Va a haber fotógrafos en el evento: los links a las fotos los subimos a las historias destacadas de @carreraroc.\n\n` +
+    `🏅 Medalla para todos los que terminan. Los resultados se publican en rocargentina.com la semana siguiente a la carrera.`,
 
   deslinde: () =>
     `✍️ *Deslinde ROC 2026*\n\n` +
@@ -321,7 +344,7 @@ const RESPUESTAS = {
     `👇 ${INFO.inscripciones_link}`,
 
   no_entiendo: () =>
-    `Esa te la paso al equipo y te responden por acá en breve 🙌\n\n` +
+    `Esa te la paso al equipo y te responden por acá en breve 🙌 Si es urgente, escribí a ${INFO.mail} con copia a corredor@carrerasucia.com\n\n` +
     `Si querés, mientras tanto escribime INFO y te mando un resumen de la carrera.`,
 };
 

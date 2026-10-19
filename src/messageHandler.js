@@ -30,7 +30,7 @@ const INTENCIONES = [
   {
     nombre: "deslinde",
     keywords: [
-      "deslinde", "deslindes", "firmar", "firma", "apto", "declaracion jurada",
+      "deslinde", "deslindes", "firmar", "firma", "declaracion jurada",
       "acta", "responsabilidad",
     ],
   },
@@ -50,8 +50,29 @@ const INTENCIONES = [
     ],
   },
   {
+    nombre: "devoluciones",
+    keywords: ["devolucion", "devuelven", "reembolso", "no puedo ir", "transferir", "cambio de participante"],
+  },
+  {
+    nombre: "descuentos",
+    keywords: ["descuento", "descuentos", "promo", "promocion", "codigo"],
+  },
+  {
+    nombre: "fotos_resultados",
+    keywords: ["foto", "fotos", "resultado", "resultados", "tiempos", "medalla", "medallas"],
+  },
+  {
+    nombre: "dia_carrera",
+    keywords: [
+      "estacion", "auto", "colectivo", "transporte", "tren", "guardarropa", "ducha",
+      "vestuario", "hidratacion", "agua", "barro", "ropa", "zapatilla", "espectador",
+      "acompanante", "ir a ver", "mascota", "perro", "retiro", "retirar", "llegar antes", "kit",
+      "apto medico", "certificado",
+    ],
+  },
+  {
     nombre: "remera",
-    keywords: ["remera", "camiseta", "talle", "kit"],
+    keywords: ["remera", "camiseta", "talle"],
   },
   {
     nombre: "inscripcion",
