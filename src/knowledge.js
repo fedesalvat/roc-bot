@@ -182,9 +182,9 @@ const RESPUESTAS = {
     `¿Querés saber algo más? Preguntame por horarios, precios, categorías, premios o reglamento.`,
 
   lugar: () =>
-    `📍 *El evento se realiza en:*\n\n` +
-    `Campo de Mayo\nProvincia de Buenos Aires\n\n` +
-    `Es uno de los predios más exigentes del país: terreno variado, desniveles reales y 30+ obstáculos diseñados para ponerte al límite.`,
+    `📍 La carrera es en Campo de Mayo, Provincia de Buenos Aires.\n` +
+    `La salida es en el sector de Asalto Aéreo.\n\n` +
+    `🗓 ${INFO.evento.fecha}`,
 
   precios: () => {
     const hoy = hoyAR();
@@ -321,16 +321,8 @@ const RESPUESTAS = {
     `👇 ${INFO.inscripciones_link}`,
 
   no_entiendo: () =>
-    `Esa no la sé responder sola 🤔 — ya se la pasé al equipo y te contestan por acá.\n\n` +
-    `Mientras tanto, podés escribirme cualquiera de estas palabras:\n\n` +
-    `📌 INFO — resumen de la carrera\n` +
-    `💰 PRECIOS\n` +
-    `✅ INSCRIPCIÓN\n` +
-    `🕘 HORARIOS — qué salidas tienen lugar\n` +
-    `⚡ CATEGORÍAS\n` +
-    `🏆 PREMIOS\n` +
-    `✍️ DESLINDE\n` +
-    `📋 REGLAMENTO`,
+    `Esa te la paso al equipo y te responden por acá en breve 🙌\n\n` +
+    `Si querés, mientras tanto escribime INFO y te mando un resumen de la carrera.`,
 };
 
-module.exports = { INFO, RESPUESTAS, loteActual, hoyAR };
+module.exports = { INFO, RESPUESTAS, loteActual, hoyAR, obtenerLlenos };

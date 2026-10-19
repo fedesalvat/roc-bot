@@ -11,6 +11,7 @@ const { generarRespuesta } = require("./messageHandler");
 const { tokenEsInstagram, enviarMensaje, marcarVisto, escribiendo, enviarPrivateReply, responderComentario, suscribirWebhook, estadoSuscripcion } = require("./instagram");
 const { RESPUESTAS } = require("./knowledge");
 const { iniciarDigest } = require("./digest");
+const { iaActiva, MODELO } = require("./ia");
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -137,7 +138,9 @@ async function procesarComentario(valor, cuentaPropiaId) {
 
   try {
     // DM con la info básica de la carrera
-    await enviarPrivateReply(commentId, RESPUESTAS.comentarioInfo());
+    ultimoEnvioBot.set(String(autorId), Date.now());
+    const resultado = await enviarPrivateReply(commentId, RESPUESTAS.comentarioInfo());
+    recordarEnvio(autorId, resultado);
     // Aviso público para que revise sus mensajes
     await responderComentario(commentId, "¡Te mandamos toda la info por DM! 📩💀 Revisá tus mensajes.");
   } catch (err) {
@@ -149,29 +152,66 @@ async function procesarComentario(valor, cuentaPropiaId) {
 // Procesar un evento de mensajería individual
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function procesarEvento(evento) {
-  // Solo mensajes de texto entrantes
-  if (!evento.message || evento.message.is_echo) return;
+// Cuando alguien del equipo contesta a mano un chat, el bot se calla en ese
+// chat por unas horas para no pisarse con la persona (PAUSA_HORAS, default 12).
+const PAUSA_MS = (Number(process.env.PAUSA_HORAS) || 12) * 60 * 60 * 1000;
+const pausas = new Map();        // userId → hasta cuándo está pausado el bot
+const ultimoEnvioBot = new Map(); // userId → cuándo le escribió el bot
+const midsBot = new Set();       // ids de mensajes que mandó el bot
 
-  const senderId   = evento.sender?.id;
+function recordarEnvio(userId, resultado) {
+  ultimoEnvioBot.set(String(userId), Date.now());
+  if (resultado?.message_id) {
+    midsBot.add(resultado.message_id);
+    if (midsBot.size > 5000) midsBot.clear();
+  }
+}
+
+function botPausado(userId) {
+  const hasta = pausas.get(String(userId));
+  if (!hasta) return false;
+  if (Date.now() > hasta) { pausas.delete(String(userId)); return false; }
+  return true;
+}
+
+async function procesarEvento(evento) {
+  // Mensaje que salió de la cuenta @carreraroc ("eco")
+  if (evento.message?.is_echo) {
+    const usuario = String(evento.recipient?.id || "");
+    const mid = evento.message?.mid;
+    if (!usuario || midsBot.has(mid)) return;              // lo mandó el bot
+    if (Date.now() - (ultimoEnvioBot.get(usuario) || 0) < 10000) return; // eco del bot recién enviado
+    pausas.set(usuario, Date.now() + PAUSA_MS);
+    console.log(`[ROC BOT] 🙋 Respondió una persona del equipo a ${usuario} → bot en pausa en ese chat`);
+    return;
+  }
+
+  // Solo mensajes de texto entrantes
+  if (!evento.message) return;
+
+  const senderId     = evento.sender?.id;
   const textoUsuario = evento.message?.text;
 
   if (!senderId) return;
 
   console.log(`[ROC BOT] 📩 Mensaje de ${senderId}: "${textoUsuario}"`);
 
-  try {
-    // Simular que el bot está viendo / escribiendo
-    await marcarVisto(senderId);
+  if (botPausado(senderId)) {
+    console.log(`[ROC BOT] ⏸  Chat ${senderId} atendido por el equipo — el bot no responde`);
+    return;
+  }
 
-    // Pequeña pausa para efecto natural (500ms)
-    await sleep(500);
+  try {
+    const respuesta = await generarRespuesta(textoUsuario, senderId);
+    if (!respuesta) return; // "gracias", emojis, audios, etc.
+
+    await marcarVisto(senderId);
     await escribiendo(senderId);
     await sleep(800);
 
-    // Generar y enviar respuesta (pasar senderId como usuario para el digest)
-    const respuesta = await generarRespuesta(textoUsuario, senderId);
-    await enviarMensaje(senderId, respuesta);
+    ultimoEnvioBot.set(String(senderId), Date.now()); // antes de enviar: el eco puede llegar rápido
+    const resultado = await enviarMensaje(senderId, respuesta);
+    recordarEnvio(senderId, resultado);
   } catch (err) {
     console.error(`[ROC BOT] Error procesando evento para ${senderId}:`, err.message);
   }
@@ -185,7 +225,7 @@ app.get("/", (_req, res) => {
   res.json({
     bot: "ROC Bot",
     estado: "activo 💀",
-    version: "1.2.0",
+    version: "1.3.0",
     evento: "ROC 2026 – 29 de noviembre – Campo de Mayo",
   });
 });
@@ -237,6 +277,8 @@ app.get("/debug", async (req, res) => {
       acciones.refresco = { error: err.response?.data || err.message };
     }
   }
+  acciones.ia = iaActiva() ? `activa (${MODELO})` : "apagada (falta ANTHROPIC_API_KEY)";
+  acciones.chats_en_pausa = [...pausas.keys()].length;
   acciones.tipo_token = tokenEsInstagram(process.env.PAGE_ACCESS_TOKEN) ? "instagram_login" : "pagina_facebook";
   acciones.firma_instagram_secret = process.env.INSTAGRAM_APP_SECRET ? "configurado" : "no";
   acciones.suscripcion_actual = await estadoSuscripcion();
@@ -262,6 +304,7 @@ app.listen(PORT, () => {
   console.log(`   Verify token: ${process.env.VERIFY_TOKEN ? "✅ configurado" : "❌ FALTA CONFIGURAR"}`);
   console.log(`   Page token:   ${process.env.PAGE_ACCESS_TOKEN ? "✅ configurado" : "❌ FALTA CONFIGURAR"}`);
   console.log(`   App secret:   ${process.env.APP_SECRET ? "✅ configurado" : "⚠️  sin configurar"}`);
+  console.log(`   IA:           ${iaActiva() ? "✅ activa (" + MODELO + ")" : "⚠️  apagada (modo palabras clave)"}`);
   console.log(`   Resend:       ${process.env.RESEND_API_KEY ? "✅ configurado" : "⚠️  sin configurar (digest desactivado)"}\n`);
 
   // Iniciar cron de digest diario (solo si Resend está configurado)

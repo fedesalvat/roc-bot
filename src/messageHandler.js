@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 const { RESPUESTAS } = require("./knowledge");
+const { responderConIA } = require("./ia");
 const { registrarPreguntaSinRespuesta } = require("./digest");
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -77,7 +78,7 @@ const INTENCIONES = [
   {
     nombre: "lugar",
     keywords: [
-      "donde", "dónde", "lugar", "ubicacion", "ubicación", "campo de mayo",
+      "donde", "dónde", "lugar", "ubicacion", "ubicación", "campo de mayo", "direccion", "dirección", "como llego", "llegar",
       "localidad", "como llegar", "cómo llegar", "mapa",
     ],
   },
@@ -187,20 +188,45 @@ function detectarIntencion(texto) {
 // Generar respuesta
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Mensajes que no necesitan respuesta ("gracias", "ok", emojis sueltos)
+const PALABRAS_CIERRE = new Set([
+  "gracias", "muchas", "mil", "genial", "perfecto", "ok", "okey", "oka", "okk",
+  "dale", "listo", "buenisimo", "joya", "barbaro", "excelente", "de", "nada",
+  "bueno", "buen", "genio", "capo", "crack", "graciass", "grax", "gracia", "tks", "thanks",
+]);
+
+function esCierre(texto) {
+  const t = normalizar(texto || "");
+  if (t === "") return (texto || "").trim() !== ""; // solo emojis / signos
+  const palabras = t.split(/\s+/);
+  return palabras.length <= 4 && palabras.every((w) => PALABRAS_CIERRE.has(w) || /^gra+c+i+a+s+$/.test(w));
+}
+
+// Devuelve el texto a enviar, o null si conviene no responder.
 async function generarRespuesta(mensajeUsuario, usuarioIg = null) {
-  if (!mensajeUsuario || mensajeUsuario.trim() === "") {
-    return RESPUESTAS.bienvenida();
+  if (!mensajeUsuario || mensajeUsuario.trim() === "") return null; // audio, foto, sticker
+  if (esCierre(mensajeUsuario)) {
+    console.log(`[ROC BOT] Mensaje: "${mensajeUsuario}" → cierre, no respondo`);
+    return null;
   }
 
-  const intencion = detectarIntencion(mensajeUsuario);
+  // 1) Modo inteligente (si hay ANTHROPIC_API_KEY)
+  const ia = await responderConIA(usuarioIg || "anon", mensajeUsuario);
+  if (ia) {
+    console.log(`[ROC BOT] Mensaje: "${mensajeUsuario}" → IA: ${ia.tipo}`);
+    if (ia.tipo === "silencio") return null;
+    if (ia.tipo === "derivar") registrarPreguntaSinRespuesta(usuarioIg, mensajeUsuario);
+    return ia.texto;
+  }
 
+  // 2) Modo palabras clave (respaldo)
+  const intencion = detectarIntencion(mensajeUsuario);
   console.log(`[ROC BOT] Mensaje: "${mensajeUsuario}" → Intención: ${intencion || "no detectada"}`);
 
   if (intencion && RESPUESTAS[intencion]) {
     return await RESPUESTAS[intencion]();
   }
 
-  // No se entendió → registrar para el digest diario
   registrarPreguntaSinRespuesta(usuarioIg, mensajeUsuario);
   return RESPUESTAS.no_entiendo();
 }
