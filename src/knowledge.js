@@ -13,7 +13,7 @@ const INFO = {
   instagram: "@carreraroc",
   web: "rocargentina.com",
   mail: "info@rocargentina.com",
-  mail_copia: "corredor@carrerasucia.com",
+  mail_copia: "corredor@carrerasucia.com.ar",
 
   evento: {
     fecha: "Domingo 29 de noviembre de 2026",
@@ -278,7 +278,7 @@ const RESPUESTAS = {
     `Si querés cambiar de categoría u horario, se puede: pagás la diferencia de precio.`,
 
   descuentos: () =>
-    `Para descuentos escribinos a ${INFO.mail} con copia a corredor@carrerasucia.com y te pasamos la info. 🙌`,
+    `Para descuentos escribinos a ${INFO.mail} con copia a corredor@carrerasucia.com.ar y te pasamos la info. 🙌`,
 
   fotos_resultados: () =>
     `📸 Va a haber fotógrafos en el evento: los links a las fotos los subimos a las historias destacadas de @carreraroc.\n\n` +
@@ -344,7 +344,7 @@ const RESPUESTAS = {
     `👇 ${INFO.inscripciones_link}`,
 
   no_entiendo: () =>
-    `Esa te la paso al equipo y te responden por acá en breve 🙌 Si es urgente, escribí a ${INFO.mail} con copia a corredor@carrerasucia.com\n\n` +
+    `Esa te la paso al equipo y te responden por acá en breve 🙌 Si es urgente, escribí a ${INFO.mail} con copia a corredor@carrerasucia.com.ar\n\n` +
     `Si querés, mientras tanto escribime INFO y te mando un resumen de la carrera.`,
 };
 
