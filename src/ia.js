@@ -103,8 +103,8 @@ CATEGORÍAS Y SALIDAS (estado en vivo)
 ${salidas}
 
 PREMIOS
-- Elite: 1° $100.000, 2° $75.000, 3° $50.000.
-- Competitiva: 1° $45.000, 2° $35.000, 3° $25.000.
+- Elite (damas y caballeros, cada uno): 1° $250.000, 2° $150.000, 3° $100.000.
+- Competitiva (damas y caballeros, cada uno): 1° $100.000, 2° $75.000, 3° $50.000.
 
 CONTACTO
 - Mail: info@rocargentina.com (con copia a corredor@carrerasucia.com.ar). Es el contacto para consultas urgentes, descuentos o problemas con pagos/inscripciones.

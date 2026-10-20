@@ -39,8 +39,8 @@ const INFO = {
   },
 
   premios: {
-    elite:       { primero: "$100.000", segundo: "$75.000", tercero: "$50.000" },
-    competitiva: { primero: "$45.000",  segundo: "$35.000", tercero: "$25.000" },
+    elite:       { primero: "$250.000", segundo: "$150.000", tercero: "$100.000" },
+    competitiva: { primero: "$100.000", segundo: "$75.000",  tercero: "$50.000" },
   },
 
   inscripciones_link: "https://inscripcion.rocargentina.com/inscripcion",
@@ -227,11 +227,11 @@ const RESPUESTAS = {
 
   premios: () =>
     `🏆 *Premios ROC 2026*\n\n` +
-    `*Categoría Elite:*\n` +
+    `*Categoría Elite (damas y caballeros):*\n` +
     `🥇 1° puesto: ${INFO.premios.elite.primero}\n` +
     `🥈 2° puesto: ${INFO.premios.elite.segundo}\n` +
     `🥉 3° puesto: ${INFO.premios.elite.tercero}\n\n` +
-    `*Categoría Competitiva:*\n` +
+    `*Categoría Competitiva (damas y caballeros):*\n` +
     `🥇 1° puesto: ${INFO.premios.competitiva.primero}\n` +
     `🥈 2° puesto: ${INFO.premios.competitiva.segundo}\n` +
     `🥉 3° puesto: ${INFO.premios.competitiva.tercero}`,
