@@ -55,6 +55,16 @@ const INFO = {
     { clave: "OPEN__11:30",       texto: "Open — 11:30 hs" },
     { clave: "OPEN__12:00",       texto: "Open — 12:00 hs" },
   ],
+
+  // Alojamiento en el predio (barraca) — datos dados por Fata el 12/11/2026
+  alojamiento: {
+    tipo: "barraca mixta",
+    capacidad: 40,
+    precio: 45000,                       // por persona, por noche
+    noches: "viernes 27 y sábado 28 de noviembre",
+    banos: "baños separados para hombres y mujeres",
+    ropa_cama: "cada cama viene con sábanas y frazada",
+  },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -145,6 +155,7 @@ const RESPUESTAS = {
     `🕘 Horarios de salida\n` +
     `🏆 Premios y categorías\n` +
     `✍️ Deslinde\n` +
+    `🛏 Alojamiento\n` +
     `📋 Reglamento\n\n` +
     `¿Qué querés saber?`,
 
@@ -342,6 +353,22 @@ const RESPUESTAS = {
     `Las inscripciones son individuales, pero si se anotan todos en la *misma salida* corren juntos.\n\n` +
     `Escribí *horarios* para ver qué salidas tienen lugar.\n\n` +
     `👇 ${INFO.inscripciones_link}`,
+
+  alojamiento: () =>
+    `🛏 Alojamiento en el predio\n\n` +
+    `Tenemos una barraca mixta con lugar para ${INFO.alojamiento.capacidad} personas:\n\n` +
+    `• ${peso(INFO.alojamiento.precio)} por persona, por noche\n` +
+    `• Noches disponibles: ${INFO.alojamiento.noches}\n` +
+    `• Baños separados para hombres y mujeres\n` +
+    `• La cama viene con sábanas y frazada\n\n` +
+    `Los lugares son limitados (${INFO.alojamiento.capacidad} en total) y se asignan por orden de reserva.\n\n` +
+    `Para reservar mandanos un mail a ${INFO.mail} con copia a ${INFO.mail_copia} y ponenos:\n` +
+    `• Nombre y apellido\n` +
+    `• DNI\n` +
+    `• Número de corredor (si ya lo tenés)\n` +
+    `• Qué noche o noches te quedás\n` +
+    `• Cuántas personas son\n\n` +
+    `Te contestamos por mail si hay lugar y cómo abonarlo. 💀`,
 
   no_entiendo: () =>
     `Esa te la paso al equipo y te responden por acá en breve 🙌 Si es urgente, escribí a ${INFO.mail} con copia a corredor@carrerasucia.com.ar\n\n` +

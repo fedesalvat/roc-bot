@@ -13,6 +13,18 @@ const { registrarPreguntaSinRespuesta } = require("./digest");
 
 const INTENCIONES = [
   {
+    nombre: "alojamiento",
+    keywords: [
+      "alojamiento", "alojar", "alojarme", "alojarnos", "aloja", "hospedaje",
+      "hospedar", "hospedarme", "barraca", "barracas", "dormir", "pernoctar",
+      "hotel", "hostel", "camping", "acampar", "carpa propia",
+      "quedarme a dormir", "quedarnos a dormir", "me quedo a dormir",
+      "noche anterior", "la noche antes", "dia anterior", "noche previa",
+      "llegar un dia antes", "vengo de lejos", "soy del interior",
+      "camas", "cucheta", "cuchetas", "colchon", "sabanas", "frazada",
+    ],
+  },
+  {
     nombre: "info",
     keywords: [
       "info", "informacion", "data", "detalles", "mas datos", "quiero saber",

@@ -102,6 +102,17 @@ CATEGORÍAS Y SALIDAS (estado en vivo)
 - Open: a tu ritmo; si no querés o no podés hacer un obstáculo pagás una penalidad y seguís.
 ${salidas}
 
+ALOJAMIENTO EN EL PREDIO
+- Hay una barraca mixta dentro del predio, con lugar para un máximo de 40 personas.
+- Precio: $45.000 por persona, por noche.
+- Noches disponibles: viernes 27 y sábado 28 de noviembre.
+- Baños separados para hombres y para mujeres.
+- Cada cama viene con sábanas y frazada.
+- Los lugares son limitados (40 en total) y se asignan por orden de reserva.
+- Para reservar hay que mandar un mail a info@rocargentina.com con copia a corredor@carrerasucia.com.ar indicando: nombre y apellido, DNI, número de corredor (si ya lo tiene), qué noche o noches se queda y cuántas personas son. El equipo confirma por mail si hay lugar y cómo abonarlo.
+- Importante: vos NO confirmás reservas ni disponibilidad de camas. Si alguien quiere reservar por Instagram, pedile igual esos datos, aclarale que la reserva queda confirmada recién cuando el equipo le responde el mail, y usá [DERIVAR] para que el equipo lo vea.
+- No sabés nada más del alojamiento (horario de entrada o salida, si se puede llegar antes, qué llevar, comidas incluidas): si preguntan eso, usá [DERIVAR].
+
 PREMIOS
 - Elite (damas y caballeros, cada uno): 1° $250.000, 2° $150.000, 3° $100.000.
 - Competitiva (damas y caballeros, cada uno): 1° $100.000, 2° $75.000, 3° $50.000.
