@@ -18,10 +18,19 @@ const INFO = {
   evento: {
     fecha: "Domingo 29 de noviembre de 2026",
     lugar: "Campo de Mayo, Provincia de Buenos Aires",
+    // Punto exacto de ingreso para GPS — dado por Fata el 24/11/2026
+    punto_gps: "Regimiento de Asalto Aereo 601, Campo de Mayo",
+    coordenadas: "-34.544449, -58.650624",
+    mapa: "https://www.google.com/maps?q=-34.544449,-58.650624",
     distancia: "8 km",
     obstaculos: "30+ obstáculos",
     limite_pagos: "lunes 23 de noviembre",
     cierre_inscripciones: "24 de noviembre",
+    // 24/11/2026 [Fata]: cerrada la inscripción online, el domingo se puede anotar en el predio.
+    // Precio y condición tomados del reglamento publicado en rocargentina.com:
+    // "Día de la carrera, si quedan cupos: $100.000" + Elite y Competitiva no se toman ese día.
+    inscripcion_en_el_lugar: "el domingo, en el predio, en la salida OPEN de las 12:00 hs",
+    precio_dia_carrera: 100000,
   },
 
   // Mismos lotes que roc-inscripciones/lib/pricing.ts
@@ -64,6 +73,11 @@ const INFO = {
     noches: "viernes 27 y sábado 28 de noviembre",
     banos: "baños separados para hombres y mujeres",
     ropa_cama: "cada cama viene con sábanas y frazada",
+    // 24/11/2026: la reserva pasa a ser por DM de Instagram (reemplaza el mail del 12/11).
+    // Se reserva transfiriendo y mandando el comprobante por el mismo chat; el equipo la toma a mano.
+    // Alias de Carrera Sucia para la transferencia [stated] Fata, 24/11/2026.
+    // Si se vacía, el bot deja de dar alias y solo pide los datos (no inventa ninguno).
+    alias: "carrerasucia",
   },
 };
 
@@ -196,6 +210,9 @@ const RESPUESTAS = {
   lugar: () =>
     `📍 La carrera es en Campo de Mayo, Provincia de Buenos Aires.\n` +
     `La salida es en el sector de Asalto Aéreo.\n\n` +
+    `Para el GPS poné: ${INFO.evento.punto_gps}\n` +
+    `Coordenadas: ${INFO.evento.coordenadas}\n` +
+    `${INFO.evento.mapa}\n\n` +
     `🗓 ${INFO.evento.fecha}`,
 
   precios: () => {
@@ -223,7 +240,9 @@ const RESPUESTAS = {
 
   inscripcion: () =>
     inscripcionesCerradas()
-      ? `Las inscripciones online ya cerraron. Para consultas escribinos a ${INFO.mail}.`
+      ? `Las inscripciones online ya cerraron.\n\n` +
+        `Pero el domingo te podés anotar en el predio: hay lugar en la salida OPEN de las 12:00 hs.\n` +
+        `Sale ${peso(INFO.evento.precio_dia_carrera)} y es solo para esa salida — Elite y Competitiva no se toman el día de la carrera. 💀`
       : `✅ *Inscribite en ROC 2026*\n\n` +
         `👇 Entrá acá:\n${INFO.inscripciones_link}\n\n` +
         `${lineaPrecioActual()}\n\n` +
@@ -304,13 +323,15 @@ const RESPUESTAS = {
 
   remera: () =>
     `👕 *Remera oficial ROC*\n\n` +
-    `La remera es opcional y cuesta ${INFO.adicionales.remera}. La agregás al inscribirte.\n\n` +
-    `👇 ${INFO.inscripciones_link}`,
+    (inscripcionesCerradas()
+      ? `El domingo la vas a poder comprar directamente en el predio, en la tienda de merchandising. 💀`
+      : `La remera es opcional y cuesta ${INFO.adicionales.remera}. La agregás al inscribirte.\n\n` +
+        `👇 ${INFO.inscripciones_link}`),
 
-  mail_confirmacion: () =>
-    `📩 *¿No te llegó el mail de confirmación?*\n\n` +
-    `El mail con tu número y QR llega cuando MercadoPago confirma el pago. Revisá spam y promociones.\n\n` +
-    `Si no aparece, escribinos a ${INFO.mail} con tu nombre y DNI y lo revisamos.`,
+  // 24/11/2026 [Fata]: los pedidos de reenvío de mail / QR / número de corredor
+  // los atiende él a mano. Devolver null hace que el bot NO conteste y, como
+  // marcarVisto() solo corre cuando hay respuesta, el chat le queda SIN LEER.
+  mail_confirmacion: () => null,
 
   contacto: () =>
     `📬 *Contacto ROC*\n\n` +
@@ -362,13 +383,23 @@ const RESPUESTAS = {
     `• Baños separados para hombres y mujeres\n` +
     `• La cama viene con sábanas y frazada\n\n` +
     `Los lugares son limitados (${INFO.alojamiento.capacidad} en total) y se asignan por orden de reserva.\n\n` +
-    `Para reservar mandanos un mail a ${INFO.mail} con copia a ${INFO.mail_copia} y ponenos:\n` +
-    `• Nombre y apellido\n` +
-    `• DNI\n` +
-    `• Número de corredor (si ya lo tenés)\n` +
-    `• Qué noche o noches te quedás\n` +
-    `• Cuántas personas son\n\n` +
-    `Te contestamos por mail si hay lugar y cómo abonarlo. 💀`,
+    (INFO.alojamiento.alias
+      ? `Para reservar, todo por acá mismo por mensaje:\n\n` +
+        `1) Transferí ${peso(INFO.alojamiento.precio)} por persona y por noche al alias ${INFO.alojamiento.alias}\n` +
+        `2) Mandanos el comprobante por este mismo chat, junto con:\n` +
+        `• Nombre y apellido\n` +
+        `• DNI\n` +
+        `• Número de corredor (si ya lo tenés)\n` +
+        `• Qué noche o noches te quedás\n` +
+        `• Cuántas personas son\n\n` +
+        `Con el comprobante te confirmamos el lugar por acá. 💀`
+      : `Para reservar es todo por acá mismo por mensaje. Pasanos:\n` +
+        `• Nombre y apellido\n` +
+        `• DNI\n` +
+        `• Número de corredor (si ya lo tenés)\n` +
+        `• Qué noche o noches te quedás\n` +
+        `• Cuántas personas son\n\n` +
+        `Y te pasamos por acá los datos para transferir y confirmarte el lugar. 💀`),
 
   no_entiendo: () =>
     `Esa te la paso al equipo y te responden por acá en breve 🙌 Si es urgente, escribí a ${INFO.mail} con copia a corredor@carrerasucia.com.ar\n\n` +

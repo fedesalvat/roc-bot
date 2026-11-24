@@ -24,12 +24,19 @@ const INTENCIONES = [
       "camas", "cucheta", "cuchetas", "colchon", "sabanas", "frazada",
     ],
   },
+  // "info" es el comodín que el propio bot ofrece ("escribime INFO").
+  // Solo debe dispararse cuando el mensaje ES un pedido de info, no cuando
+  // alguien dice "gracias por la info" al final de otra pregunta.
+  // Por eso se compara el mensaje completo, no una palabra suelta.
   {
     nombre: "info",
-    keywords: [
-      "info", "informacion", "data", "detalles", "mas datos", "quiero saber",
-      "me pasas", "me pasan", "me das", "me dan", "contame", "cuentame",
+    soloMensajeCompleto: [
+      "info", "informacion", "mas info", "mas informacion", "quiero info",
+      "quiero informacion", "me pasas info", "me pasan info", "me das info",
+      "me dan info", "pasame info", "pasame la info", "mandame info",
+      "quiero saber", "contame", "cuentame", "detalles", "mas datos", "data",
     ],
+    keywords: [],
   },
   {
     nombre: "mail_confirmacion",
@@ -206,7 +213,15 @@ function detectarIntencion(texto) {
   // "ahora" no dispare "hora" ni "contacto" dispare "acta".
   const normalizado = " " + normalizar(texto).replace(/\s+/g, " ");
 
+  const exacto = normalizar(texto).replace(/\s+/g, " ");
+
   for (const intencion of INTENCIONES) {
+    // Intenciones que solo valen si el mensaje entero es ese pedido
+    if (intencion.soloMensajeCompleto) {
+      for (const frase of intencion.soloMensajeCompleto) {
+        if (exacto === normalizar(frase)) return intencion.nombre;
+      }
+    }
     for (const kw of intencion.keywords) {
       if (normalizado.includes(" " + normalizar(kw))) {
         return intencion.nombre;
