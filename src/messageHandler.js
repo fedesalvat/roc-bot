@@ -87,6 +87,10 @@ const INTENCIONES = [
       "vestuario", "hidratacion", "agua", "barro", "ropa", "zapatilla", "espectador",
       "acompanante", "ir a ver", "mascota", "perro", "retiro", "retirar", "llegar antes", "kit",
       "apto medico", "certificado",
+      // 27/11/2026: que hay que llevar el dia de la carrera (QR + DNI + deslinde firmado).
+      // No se agrega "dni" suelto a proposito: los mensajes de reserva de barraca traen el DNI.
+      "que llevar", "que tengo que llevar", "que hay que llevar", "que llevo",
+      "requisito", "requisitos", "documento", "dni fisico", "llevar el dni",
     ],
   },
   {

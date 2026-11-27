@@ -29,8 +29,11 @@ const INFO = {
     // 24/11/2026 [Fata]: cerrada la inscripción online, el domingo se puede anotar en el predio.
     // Precio y condición tomados del reglamento publicado en rocargentina.com:
     // "Día de la carrera, si quedan cupos: $100.000" + Elite y Competitiva no se toman ese día.
-    inscripcion_en_el_lugar: "el domingo, en el predio, en la salida OPEN de las 12:00 hs",
+    inscripcion_en_el_lugar: "el domingo, en el predio, solo en la salida OPEN de las 12:00 hs",
     precio_dia_carrera: 100000,
+    // 27/11/2026 [Fata]: ya NO queda lugar en ninguna salida y no se puede anotar online.
+    // Lo unico que queda es anotarse en persona el domingo, para la salida de las 12:00.
+    salidas_completas: true,
   },
 
   // Mismos lotes que roc-inscripciones/lib/pricing.ts
@@ -72,7 +75,11 @@ const INFO = {
     precio: 45000,                       // por persona, por noche
     noches: "viernes 27 y sábado 28 de noviembre",
     banos: "baños separados para hombres y mujeres",
-    ropa_cama: "cada cama viene con sábanas y frazada",
+    // 27/11/2026 [Fata]: NO hay sábanas. La cama viene con almohada y manta.
+    ropa_cama: "la cama viene con una almohada y una manta — no hay sábanas",
+    traer: "toalla, sábana y bolsa de dormir",
+    // 27/11/2026 [Fata]: horario de llegada a la barraca.
+    ingreso: "el sábado a partir de las 10 de la mañana",
     // 24/11/2026: la reserva pasa a ser por DM de Instagram (reemplaza el mail del 12/11).
     // Se reserva transfiriendo y mandando el comprobante por el mismo chat; el equipo la toma a mano.
     // Alias de Carrera Sucia para la transferencia [stated] Fata, 24/11/2026.
@@ -240,8 +247,8 @@ const RESPUESTAS = {
 
   inscripcion: () =>
     inscripcionesCerradas()
-      ? `Las inscripciones online ya cerraron.\n\n` +
-        `Pero el domingo te podés anotar en el predio: hay lugar en la salida OPEN de las 12:00 hs.\n` +
+      ? `Las inscripciones online ya cerraron y no queda lugar en ninguna salida.\n\n` +
+        `Lo único que queda es anotarse en persona el domingo, en el predio, para la salida OPEN de las 12:00 hs.\n` +
         `Sale ${peso(INFO.evento.precio_dia_carrera)} y es solo para esa salida — Elite y Competitiva no se toman el día de la carrera. 💀`
       : `✅ *Inscribite en ROC 2026*\n\n` +
         `👇 Entrá acá:\n${INFO.inscripciones_link}\n\n` +
@@ -250,10 +257,17 @@ const RESPUESTAS = {
         `Al confirmarse el pago te llega un mail con tu número de corredor y tu QR.`,
 
   horarios: async () =>
-    `🕘 *Salidas ROC 2026* (29/11)\n\n` +
-    (await textoSalidas()) +
-    `\n\nElegís tu salida al inscribirte:\n${INFO.inscripciones_link}\n\n` +
-    `Si querés correr con amigos, anótense todos en la misma salida.`,
+    inscripcionesCerradas()
+      ? `🕘 *Salidas ROC 2026* (29/11)\n\n` +
+        `• Elite — 9:30 hs\n` +
+        `• Competitiva — 10:00 hs\n` +
+        `• Open — 10:30 / 11:00 / 11:30 / 12:00 hs\n\n` +
+        `Todas las salidas están completas y la inscripción online ya cerró.\n` +
+        `El domingo, en el predio, solo se puede anotar para la salida de las 12:00 hs (${peso(INFO.evento.precio_dia_carrera)}). 💀`
+      : `🕘 *Salidas ROC 2026* (29/11)\n\n` +
+        (await textoSalidas()) +
+        `\n\nElegís tu salida al inscribirte:\n${INFO.inscripciones_link}\n\n` +
+        `Si querés correr con amigos, anótense todos en la misma salida.`,
 
   premios: () =>
     `🏆 *Premios ROC 2026*\n\n` +
@@ -295,6 +309,8 @@ const RESPUESTAS = {
 
   dia_carrera: () =>
     `🏁 Día de la carrera\n\n` +
+    `• Llevá tu QR (el que te llegó por mail) y el DNI físico\n` +
+    `• El deslinde tiene que estar firmado online antes de la carrera\n` +
     `• Llegá 1 hora y media antes de tu salida: ahí retirás el kit\n` +
     `• Estacionamiento gratis y transporte público hasta la puerta del predio\n` +
     `• Guardarropa gratis, duchas exteriores y carpas vestuario\n` +
@@ -381,7 +397,9 @@ const RESPUESTAS = {
     `• ${peso(INFO.alojamiento.precio)} por persona, por noche\n` +
     `• Noches disponibles: ${INFO.alojamiento.noches}\n` +
     `• Baños separados para hombres y mujeres\n` +
-    `• La cama viene con sábanas y frazada\n\n` +
+    `• La cama viene con una almohada y una manta: no hay sábanas\n` +
+    `• Te recomendamos traer toalla, sábana y bolsa de dormir\n` +
+    `• Podés llegar ${INFO.alojamiento.ingreso}\n\n` +
     `Los lugares son limitados (${INFO.alojamiento.capacidad} en total) y se asignan por orden de reserva.\n\n` +
     (INFO.alojamiento.alias
       ? `Para reservar, todo por acá mismo por mensaje:\n\n` +
