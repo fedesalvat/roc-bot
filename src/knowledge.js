@@ -80,6 +80,9 @@ const INFO = {
     traer: "toalla, sábana y bolsa de dormir",
     // 27/11/2026 [Fata]: horario de llegada a la barraca.
     ingreso: "el sábado a partir de las 10 de la mañana",
+    // 27/11/2026 [Fata]: hasta cuándo se pueden quedar y que no hay comida.
+    salida: "hasta las 16 hs",
+    comidas: false,
     // 24/11/2026: la reserva pasa a ser por DM de Instagram (reemplaza el mail del 12/11).
     // Se reserva transfiriendo y mandando el comprobante por el mismo chat; el equipo la toma a mano.
     // Alias de Carrera Sucia para la transferencia [stated] Fata, 24/11/2026.
@@ -314,7 +317,7 @@ const RESPUESTAS = {
     `• Llegá 1 hora y media antes de tu salida: ahí retirás el kit\n` +
     `• Estacionamiento gratis y transporte público hasta la puerta del predio\n` +
     `• Guardarropa gratis, duchas exteriores y carpas vestuario\n` +
-    `• Hidratación en el circuito y en la llegada\n` +
+    `• Hidratación: un puesto en la mitad del recorrido y otro al finalizar\n` +
     `• Traé ropa cómoda que se pueda mojar y ensuciar: hay agua y barro 💦\n` +
     `• Espectadores sin cargo y mascotas con correa\n` +
     `• No hace falta apto médico: sí es obligatorio firmar el deslinde`,
@@ -399,7 +402,8 @@ const RESPUESTAS = {
     `• Baños separados para hombres y mujeres\n` +
     `• La cama viene con una almohada y una manta: no hay sábanas\n` +
     `• Te recomendamos traer toalla, sábana y bolsa de dormir\n` +
-    `• Podés llegar ${INFO.alojamiento.ingreso}\n\n` +
+    `• Entrada: ${INFO.alojamiento.ingreso}. Salida: ${INFO.alojamiento.salida}\n` +
+    `• No incluye comida\n\n` +
     `Los lugares son limitados (${INFO.alojamiento.capacidad} en total) y se asignan por orden de reserva.\n\n` +
     (INFO.alojamiento.alias
       ? `Para reservar, todo por acá mismo por mensaje:\n\n` +
